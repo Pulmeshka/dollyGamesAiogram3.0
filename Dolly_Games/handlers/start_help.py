@@ -1,26 +1,45 @@
-from main import dp
-from aiogram import types
-from .data import Database
+from aiogram import Router
+from aiogram.filters import CommandStart, Command
+from aiogram.types import Message
 
-db = Database()
-#start - начало
-@dp.message_handler(commands=['start'])
-async def start(message: types.Message):
-    await message.answer('команды бота /help')
-    id = message.from_user.id
-    if db.get_balance(id) is None:
-        db.insert_user(id)
+from db import db
 
-#help - помощь
-@dp.message_handler(commands=['help'])
-async def help(message: types.Message):
-    await message.answer('помощь по боту\n/game - все мини-игры бота\n/commands - все команды бота\n/rp - все рп команды по боту')
+router = Router(name="start_help_router")
 
-@dp.message_handler(commands=['rp'])
-async def rp(message: types.Message):
-    await message.answer('рп команды нужно вводить ответом на сообщение игрока\nUPD 1.0\nобнять\nударить\nкинуть\nвыкинуть\nоскорбить\n--------------------------')
 
-@dp.message_handler(commands=['commands'])
-async def commands(message: types.Message):
-    await message.answer('ми - просмотр профиля\n')
+@router.message(CommandStart())
+async def start_cmd(msg: Message):
+    await msg.answer("команды бота /help")
 
+    if not await db.get_balance(msg.from_user.id):
+        await db.insert_user(msg.from_user.id)
+
+
+# help - помощь
+@router.message(Command("start"))
+async def help_cmd(msg: Message):
+    await msg.answer(
+        "помощь по боту\n"
+        "/game - все мини-игры бота\n"
+        "/commands - все команды бота\n"
+        "/rp - все рп команды по боту"
+    )  # fmt: skip
+
+
+@router.message(Command("rp"))
+async def rp(msg: Message):
+    await msg.answer(
+        "рп команды нужно вводить ответом на сообщение игрока\n"
+        "UPD 1.0\n"
+        "обнять\n"
+        "ударить\n"
+        "кинуть\n"
+        "выкинуть\n"
+        "оскорбить\n"
+        "--------------------------"
+    )  # fmt: skip
+
+
+@router.message(Command("commands"))
+async def commands(msg: Message):
+    await msg.answer("ми - просмотр профиля\n")

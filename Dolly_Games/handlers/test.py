@@ -1,6 +1,10 @@
-from aiogram import types
-from main import dp
+from aiogram import Router
+from aiogram.filters import Command
+from aiogram.types import Message
 
-@dp.message_handler(commands=['test'])
-async def test(message: types.Message):
-    await message.answer('тест прошёл успешно')
+router = Router(name="test_router")
+
+
+@router.message(Command("test"))
+async def test(msg: Message):
+    await msg.answer("тест прошёл успешно")

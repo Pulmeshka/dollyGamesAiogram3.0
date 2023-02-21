@@ -1,15 +1,25 @@
-from main import dp
-from aiogram import types
-from aiogram.filters import Text
-from .data import Database
+from aiogram import Router
+from aiogram.filters import Text, Command
+from aiogram.types import Message
 
-db = Database()
-@dp.message_handler(Text('ми'))
-async def profile(message: types.Message):
-    id = message.from_user.id
-    dolly = db.get_balance(id)
-    minti = db.get_minti(id)
-    if db.get_balance(message.from_user.id) is None:
-        db.insert_user(message.from_user.id)
+from db import db
+
+router = Router(name="me_router")
+
+
+@router.message(Text("ми", ignore_case=True))
+@router.message(Command("me"))
+async def profile(msg: Message):
+    balance = await db.get_balance(msg.from_user.id)
+    minti = await db.get_minti(msg.from_user.id)
+
+    if not balance:
+        await db.insert_user(msg.from_user.id)
+
     else:
-        await message.answer(f'профиль {message.from_user.first_name}\nдолли🧿 - {dolly}\nминтиⓂ - {minti}\nбрак💞 - скоро...')
+        await msg.answer(
+            f"профиль {msg.from_user.first_name}\n"
+            f"долли🧿 - {balance}\n"
+            f"минтиⓂ - {minti}\n"
+            f"брак💞 - скоро..."
+        )  # fmt: skip
